@@ -1,8 +1,10 @@
 import requests
 import urllib
 
-args = {"account": "admin", "passwd": ""}
+args = {"account": "", "passwd": ""}
 URL = "http://192.168.1.150:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=sid".format(urllib.parse.urlencode(args))
+dbid =[]
+#dbidp = ""
 r = requests.get(url=URL)
 uid = r.text[16:42]
 URL2 = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
@@ -41,29 +43,35 @@ def  apiLogin():
     return (uid)
 
 def listDown(uid):
-    URL = "http://192.168.1.151:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
-    r = requests.get(url=URL2)
+    URL = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
+    r = requests.get(url=URL)
     #decodes (i.e. converts) the text of a JSON file into a Python data structure (dictionary)
     data = r.json()
-    #first element of dict
     dic = data["data"]
-    #second element of dict
     dic2 = dic["tasks"]
-    #iter for return id downloads
     for i in dic2:
-        id =  i["id"]
-        print(id)
-    return id
+        dbid.append(i["id"])
+    return dbid
+#function convert from list dbid to str
+def convertList(dbid):
+#convert list to str without []
+    dbidp = ",".join(dbid)
+    #print (dbidp)
+    return dbidp
 
 
+def getInfo(uid,dbidp):
+    URL = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=getinfo&id={}&_sid={}".format(dbidp,uid)
+    r = requests.get(url=URL)
+    if r.status_code != 200:
+        print("The error is {}".format(r))
+    else:
+        print("connection  {}".format(r))
+    data = r.json()
+    print ("data", data)
 
-
-
-
-    #for x in r2.text[id]:
-     #   l =[]
-      #  l.append(x)
-      #  print(l)
 
 apiLogin()
 listDown(uid)
+#get inf with function converList Parameter
+getInfo(uid,convertList(dbid))
