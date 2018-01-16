@@ -1,10 +1,11 @@
 import requests
 import urllib
+
 args = {"account": "admin", "passwd": ""}
-URL = "http://192.168.1.151:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=sid".format(urllib.parse.urlencode(args))
+URL = "http://192.168.1.150:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=sid".format(urllib.parse.urlencode(args))
 r = requests.get(url=URL)
-uid = r.text[16:39]
-URL2 = "http://192.168.1.151:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
+uid = r.text[16:42]
+URL2 = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
 r2 = requests.get(url=URL2)
 print(r.text)
 print(uid)
@@ -13,7 +14,7 @@ print(r2)
 
 #function check api
 def apiInformation():
-    URL = "http://192.168.1.151:5000/webapi/query.cgi?api=SYNO.API.Info&version=1&method=query&quer%20y=SYNO.API.Auth,SYNO.DownloadStation.Task"
+    URL = "http://192.168.1.150:5000/webapi/query.cgi?api=SYNO.API.Info&version=1&method=query&quer%20y=SYNO.API.Auth,SYNO.DownloadStation.Task"
     resp = requests.get(url=URL)
     if resp.status_code != 200:
         print("The error is {}".format(resp))
@@ -29,20 +30,40 @@ def apiInformation():
 #         print("connection  {}".format(resp))
 #function with uid auth
 def  apiLogin():
-    URL = "http://192.168.1.151:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=uid".format(urllib.parse.urlencode(args))
+    URL = "http://192.168.1.150:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=uid".format(urllib.parse.urlencode(args))
     resp = requests.get(url=URL)
-    uid = r.text[15:40]
+#
+    uid = r.text[15:42]
     if resp.status_code != 200:
         print("The error is {}".format(resp))
     else:
         print("connection  {}".format(resp))
     return (uid)
 
-
 def listDown(uid):
     URL = "http://192.168.1.151:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=list&_sid={}".format(uid)
     r = requests.get(url=URL2)
-    print (r2.text)
+    #decodes (i.e. converts) the text of a JSON file into a Python data structure (dictionary)
+    data = r.json()
+    #first element of dict
+    dic = data["data"]
+    #second element of dict
+    dic2 = dic["tasks"]
+    #iter for return id downloads
+    for i in dic2:
+        id =  i["id"]
+        print(id)
+    return id
+
+
+
+
+
+
+    #for x in r2.text[id]:
+     #   l =[]
+      #  l.append(x)
+      #  print(l)
 
 apiLogin()
 listDown(uid)
