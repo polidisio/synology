@@ -4,6 +4,7 @@ import urllib
 args = {"account": "", "passwd": ""}
 URL = "http://192.168.1.150:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=2&method=login&{}&session=DownloadStation&format=sid".format(urllib.parse.urlencode(args))
 dbid =[]
+dbiddel= []
 #dbidp = ""
 r = requests.get(url=URL)
 uid = r.text[16:42]
@@ -59,7 +60,7 @@ def convertList(dbid):
     #print (dbidp)
     return dbidp
 
-
+#get info for delete finish download
 def getInfo(uid,dbidp):
     URL = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=getinfo&id={}&_sid={}".format(dbidp,uid)
     r = requests.get(url=URL)
@@ -68,10 +69,32 @@ def getInfo(uid,dbidp):
     else:
         print("connection  {}".format(r))
     data = r.json()
-    print ("data", data)
+    dic = data["data"]
+    dic2 = dic["tasks"]
+    #print ("data", dic2)
+    for i in dic2:
+        if i["status"] == 5: #status 5 = finish download
+            #print(i["status"], i["title"],i["id"])
+            dbiddel.append(i["id"])
+    print (dbiddel)
+    return dbiddel
+#delete Function
+def getDelete(uid,dbiddel):
+    URL = "http://192.168.1.150:5000/webapi/DownloadStation/task.cgi?api=SYNO.DownloadStation.Task&version=1&method=delete&id={}&_sid={}".format(dbiddel,uid)
+    r = requests.get(url=URL)
+    if r.status_code != 200:
+        print("The error is {}".format(r))
+    else:
+        print("Remove Correct  {}".format(r))
+#function close session
+def apiClose():
+    URL = "http://192.168.1.150:5000/webapi/auth.cgi?api=SYNO.API.Auth&version=1&method=logout&session=DownloadStation"
+    requests.get(url=URL)
 
 
 apiLogin()
 listDown(uid)
 #get inf with function converList Parameter
 getInfo(uid,convertList(dbid))
+#getDelete(uid,convertList(dbiddel))
+apiClose()
